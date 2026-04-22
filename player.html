@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RehabMaster | Player</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 1rem; }
+    .glass-panel { width: 100%; max-width: 400px; padding: 2rem; text-align: center; }
+    input { width: 100%; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid #ccc; font-size: 1.2rem; text-align: center;}
+    button { width: 100%; padding: 1rem; border-radius: 8px; border: none; background: var(--accent-blue); color: white; font-size: 1.2rem; cursor: pointer;}
+    .hidden { display: none !important; }
+    
+    /* Kahoot Style Grid */
+    .kahoot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; max-width: 600px; height: 50vh; }
+    .kahoot-btn { color: white; font-size: 3rem; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;}
+    .kahoot-btn:active { transform: scale(0.95); }
+    .kahoot-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-a { background: #e21b3c; } /* Red */
+    .btn-b { background: #1368ce; } /* Blue */
+    .btn-c { background: #d89e00; } /* Yellow */
+    .btn-d { background: #26890c; } /* Green */
+    
+    .team-header { position: absolute; top: 0; width: 100%; background: rgba(255,255,255,0.8); padding: 1rem; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div id="team-header" class="team-header hidden">Team: <span id="team-name">None</span></div>
+
+  <!-- Screen: Join -->
+  <div id="screen-join" class="glass-panel">
+    <h2 style="color: var(--accent-blue); margin-bottom: 2rem;">Join Game</h2>
+    <input type="text" id="join-pin" placeholder="Game PIN" maxlength="4" />
+    <input type="text" id="join-name" placeholder="Nickname" maxlength="15" />
+    <div style="display:flex; justify-content:center; gap: 1rem; margin-bottom: 1.5rem; font-size: 2.5rem;" id="emoji-picker">
+      <div onclick="playerApp.selectEmoji('😎', event)" style="cursor:pointer; border: 2px solid var(--accent-cyan); border-radius: 10px; padding: 0.3rem; background: rgba(255,255,255,0.1);" class="emoji-opt">😎</div>
+      <div onclick="playerApp.selectEmoji('🤠', event)" style="cursor:pointer; padding: 0.3rem; border: 2px solid transparent; border-radius: 10px; background: rgba(255,255,255,0.1);" class="emoji-opt">🤠</div>
+      <div onclick="playerApp.selectEmoji('👽', event)" style="cursor:pointer; padding: 0.3rem; border: 2px solid transparent; border-radius: 10px; background: rgba(255,255,255,0.1);" class="emoji-opt">👽</div>
+      <div onclick="playerApp.selectEmoji('🤖', event)" style="cursor:pointer; padding: 0.3rem; border: 2px solid transparent; border-radius: 10px; background: rgba(255,255,255,0.1);" class="emoji-opt">🤖</div>
+    </div>
+    <button id="btn-join">Enter</button>
+    <div id="join-error" style="color: red; margin-top: 1rem;"></div>
+  </div>
+
+  <!-- Screen: Waiting -->
+  <div id="screen-waiting" class="glass-panel hidden">
+    <h2 id="waiting-text">You're in!</h2>
+    <p>Look at the main screen.</p>
+  </div>
+
+  <!-- Screen: Answer -->
+  <div id="screen-answer" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <h2 style="margin-bottom: 2rem; color: white; text-shadow: 1px 1px 4px rgba(0,0,0,0.5);">Select an Option</h2>
+    <div class="kahoot-grid">
+      <button class="kahoot-btn btn-a" onclick="playerApp.submitAnswer(0)">A</button>
+      <button class="kahoot-btn btn-b" onclick="playerApp.submitAnswer(1)">B</button>
+      <button class="kahoot-btn btn-c" onclick="playerApp.submitAnswer(2)">C</button>
+      <button class="kahoot-btn btn-d" onclick="playerApp.submitAnswer(3)">D</button>
+    </div>
+  </div>
+
+  <!-- Screen: Team Reveal -->
+  <div id="screen-team-reveal" class="glass-panel hidden">
+    <h2 style="color: var(--accent-cyan);">Teams Formed!</h2>
+    <p style="font-size: 1.2rem; margin: 1rem 0;">You have been assigned to:</p>
+    <h1 style="font-size: 4rem; color: var(--accent-blue); margin-bottom: 1rem;" id="reveal-team-name">A</h1>
+    <p>Your Teammates:</p>
+    <ul id="teammate-list" style="list-style: none; padding: 0; font-weight: bold; color: var(--text-secondary); margin-bottom: 2rem;"></ul>
+    <button id="btn-re-enter" onclick="playerApp.reEnterGame()">Enter Team Mode</button>
+  </div>
+
+  <script src="player.js"></script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RehabMaster | Host Display</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .host-screen { display: none; width: 100%; height: 100%; }
+    .host-screen.active { display: flex; flex-direction: column; }
+    
+    /* Lobby Styles */
+    .lobby-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .pin-display { font-size: 8rem; font-weight: 700; color: var(--accent-blue); letter-spacing: 10px; margin: 2rem 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+    .join-instruction { font-size: 2rem; color: var(--text-primary); }
+    .player-count { font-size: 1.5rem; color: var(--accent-cyan); margin-bottom: 2rem; }
+    .players-list { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; max-width: 800px; margin-bottom: 3rem; }
+    .player-tag { background: white; padding: 0.5rem 1.5rem; border-radius: 20px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    
+    /* Team Reveal Styles */
+    .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; width: 100%; height: 100%; padding: 2rem; }
+    .team-card { background: var(--glass-bg); backdrop-filter: blur(12px); border-radius: 16px; padding: 2rem; box-shadow: var(--glass-shadow); }
+    .team-card h2 { font-size: 2.5rem; border-bottom: 2px solid; padding-bottom: 1rem; margin-bottom: 1rem; }
+    .team-a h2 { color: #e21b3c; border-color: #e21b3c; }
+    .team-b h2 { color: #1368ce; border-color: #1368ce; }
+    .team-c h2 { color: #d89e00; border-color: #d89e00; }
+    .team-d h2 { color: #26890c; border-color: #26890c; }
+    .team-members { list-style: none; padding: 0; font-size: 1.5rem; }
+    .team-members li { margin-bottom: 0.5rem; }
+    .reveal-header { text-align: center; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  
+  <div class="app-container">
+    
+    <!-- LOBBY SCREEN -->
+    <div id="screen-lobby" class="host-screen active">
+      <div class="lobby-container">
+        <h1 class="join-instruction">Join at <span style="font-weight:700;">localhost:8081/player.html</span> with PIN:</h1>
+        <div class="pin-display" id="lobby-pin">----</div>
+        <div class="player-count">Waiting for players... <span id="lobby-count">0</span> connected</div>
+        <div class="players-list" id="lobby-players"></div>
+        <button id="btn-start-game" class="btn primary-btn" style="font-size: 1.5rem; padding: 1rem 3rem;">Start Game</button>
+      </div>
+    </div>
+
+    <!-- GAME WORKSPACE SCREEN -->
+    <div id="screen-game" class="host-screen">
+      <!-- Header -->
+      <header class="glass-panel main-header">
+        <div class="header-left">
+          <div class="logo">Rehab<span>Master</span></div>
+        </div>
+        <div class="header-center">
+          <div class="progress-tracker">
+            <span class="progress-text">Case <span id="current-case-num">1</span> of 5</span>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="score-display">Total Answers: <span id="answer-counter">0</span> / <span id="total-players">0</span></div>
+          <div class="timer-display" id="timer">10:00</div>
+        </div>
+      </header>
+
+      <!-- Main Workspace -->
+      <main class="workspace">
+        <!-- Left / Center Column -->
+        <section class="clinical-case-section">
+          <div class="glass-panel card scenario-card">
+            <div class="card-header">
+              <h2 id="case-title">Loading...</h2>
+              <span class="badge" id="case-focus">Specialty</span>
+            </div>
+            <div class="card-body">
+              <h3>Clinical Scenario</h3>
+              <p id="case-scenario">Patient description</p>
+            </div>
+          </div>
+
+          <div class="glass-panel card question-card">
+            <h3 id="case-question" class="question-text">Question?</h3>
+            <div class="answers-grid" id="answers-container">
+              <!-- Rendered via JS -->
+            </div>
+            
+            <div class="action-footer" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+              <small id="answer-wait-msg" style="color:var(--text-secondary); font-weight:bold;">Waiting for players to answer on their devices...</small>
+              <button id="btn-show-results" class="btn primary-btn">Show Results</button>
+            </div>
+          </div>
+
+          <!-- Insight Panel -->
+          <div class="glass-panel card insight-card hidden" id="insight-panel">
+            <div class="insight-header">
+              <h3>Clinical Reasoning Insight</h3>
+            </div>
+            <div class="insight-body">
+              <p><strong>Correct Answer:</strong> <span id="insight-explanation"></span></p>
+              <p><strong>Why others are incorrect:</strong> <span id="insight-incorrect"></span></p>
+            </div>
+            
+            <!-- Conditional button depends on state -->
+            <button id="btn-do-grouping" class="btn secondary-btn hidden" style="margin-top:1rem;">Form Teams (Based on Phase 1)</button>
+            <button id="btn-next-case" class="btn secondary-btn hidden" style="margin-top:1rem;">Next Case</button>
+          </div>
+        </section>
+
+        <!-- Right Column -->
+        <aside class="investigations-section">
+          <div class="glass-panel card investigations-card">
+            <h3>Patient Chart</h3>
+            <p class="subtitle">Click to view on main screen</p>
+            <div class="investigation-list">
+              <div class="investigation-item" onclick="hostApp.openModal('labs')">
+                <div class="icon">🧪</div><div class="details"><h4>Labs</h4></div>
+              </div>
+              <div class="investigation-item" onclick="hostApp.openModal('imaging')">
+                <div class="icon">🩻</div><div class="details"><h4>Imaging</h4></div>
+              </div>
+              <div class="investigation-item" onclick="hostApp.openModal('functional')">
+                <div class="icon">🏃</div><div class="details"><h4>Functional</h4></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </main>
+    </div>
+
+    <!-- TEAM REVEAL SCREEN -->
+    <div id="screen-reveal" class="host-screen">
+      <div class="reveal-header">
+        <h1 style="font-size:3rem; color:var(--accent-blue);">Teams Assigned!</h1>
+        <p style="font-size:1.5rem; color:var(--text-secondary);">Players have been grouped based on their initial clinical reasoning.</p>
+        <button id="btn-proceed-from-reveal" class="btn primary-btn" style="margin-top: 1rem;">Continue to Next Case</button>
+      </div>
+      <div class="teams-grid">
+        <div class="team-card team-a">
+          <h2>Team A</h2>
+          <ul class="team-members" id="team-list-A"></ul>
+        </div>
+        <div class="team-card team-b">
+          <h2>Team B</h2>
+          <ul class="team-members" id="team-list-B"></ul>
+        </div>
+        <div class="team-card team-c">
+          <h2>Team C</h2>
+          <ul class="team-members" id="team-list-C"></ul>
+        </div>
+        <div class="team-card team-d">
+          <h2>Team D</h2>
+          <ul class="team-members" id="team-list-D"></ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay hidden" id="investigation-modal">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3 id="modal-title">Results</h3>
+        <button class="close-btn" onclick="hostApp.closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body-content"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
