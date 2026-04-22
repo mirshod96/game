@@ -122,7 +122,7 @@ class GameHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(json.dumps(response_dict).encode())
 
 # Change working dir to serve static files correctly
-os.chdir("/Users/misha/Desktop/game")
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 class ReusableTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
