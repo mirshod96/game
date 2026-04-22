@@ -104,6 +104,8 @@ const hostApp = {
           <div class="player-emoji">${p.emoji || '😎'}</div>
           <div>${p.name}</div>
         </div>`).join('');
+    } else if (this.currentScreen === 'reveal') {
+      this.renderTeams();
     }
   },
 
